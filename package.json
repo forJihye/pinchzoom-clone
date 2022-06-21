@@ -1,0 +1,18 @@
+{
+  "name": "esbuild-boilerplate",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "esbuild": "^0.11.23"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "esbuild src/index.ts --watch --bundle --loader:.png=dataurl --loader:.jpg=file --outfile=dist/index.js",
+    "build": "esbuild src/index.ts --minify --pure:console.log --bundle --outfile=build/dist/index.js && cp index.html build/"
+  },
+  "keywords": [],
+  "author": "forJihye <qkrwlgp76@gmail.com> (https://github.com/forJihye)",
+  "license": "ISC"
+}
