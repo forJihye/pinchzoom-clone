@@ -9,7 +9,7 @@
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "esbuild src/index.ts --watch --bundle --loader:.png=dataurl --loader:.jpg=file --outfile=dist/index.js",
+    "start": "esbuild src/index.ts --watch --bundle --outfile=dist/index.js",
     "build": "esbuild src/index.ts --minify --pure:console.log --bundle --outfile=build/dist/index.js && cp index.html build/"
   },
   "keywords": [],

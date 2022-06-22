@@ -9,12 +9,40 @@
   <meta name="apple-mobile-web-app-capable" content="yes" /> 
   <!-- 주소줄 없애기 (안드로이드) -->
   <meta name="mobile-web-app-capable" content="yes" />
-  <link rel="stylesheet" href="./dist/index.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    body {
+      background: #333;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      vertical-align: middle;
+    }
+
+    .pinch-zoom-main {
+      width: 400px;
+      height: 600px;
+      background: #f8f8f8;
+    }
+  </style>
 </head>
 <body>
-  <div class="pinch-zoom-parent">
+  <div class="pinch-zoom-main">
+    <!-- <img src="./kitten-tall.jpg" class="pinch-zoom" /> -->
     <div class="pinch-zoom">
       <img src="./kitten-tall.jpg" />
+      <!-- <img src="./kitten-wide.jpg" /> -->
     </div>
   </div>
   <script src="./dist/index.js"></script>
