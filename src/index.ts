@@ -45,14 +45,25 @@ class PinchZoom {
   offset: {x: number; y: number}  = {x: 0, y: 0};
 
   hasInteraction!: boolean;
-  inAnimtaion!: boolean;
+  inAnimation!: boolean;
   isDoubleTap!: boolean;
   enabled!: boolean;
-
-  get getInitialZoomFactor() { // 초기 확대/축소 비율 (container 자식 요소)
+// 초기 확대/축소 비율 (container 자식 요소)
+  get getInitialZoomFactor() { 
     const xZoom = this.container.offsetWidth / this.el.offsetWidth;
     const yZoom = this.container.offsetHeight / this.el.offsetHeight;
     return Math.min(xZoom, yZoom);
+  }
+  // 현재 오프셋 및 확대/축소 비율에 대한 가상 확대/축소 중심 계산 (역 줌 사용)
+  get getCurrentZoomCenter() { // return - the current zoom center
+    const offsetLeft = this.offset.x - this.initialOffset.x;
+    const offsetTop = this.offset.y - this.initialOffset.y;
+    const centerX = -1 * this.offset.x - offsetLeft / (1 / this.zoomFactor - 1);
+    const centerY = -1 * this.offset.y - offsetTop / (1 / this.zoomFactor - 1);
+    return {
+      x: centerX,
+      y: centerY,
+    }
   }
   constructor(el: HTMLElement, options: Object) {
     this.el = el;
@@ -121,7 +132,7 @@ class PinchZoom {
   }
   // Scale to a specific zoom factor (not relative) 특정 확대/축소 비율로 크키 고정 (상대적X)
   private scaleTo (zoomFactor: number, center: {x: number; y: number}) {
-    this.scale(zoomFactor, center)
+    this.scale(zoomFactor / this.zoomFactor, center)
   }
   // Scales the element from specified center 지정된 중심에서의 요소 스케일 (크키) 조정
   private scale (scale: number, center: {x: number; y: number}) {
@@ -135,7 +146,7 @@ class PinchZoom {
   // 현재 상태를 기준으로 확대/축소 비율 재조정
   private scaleZoomFactor (scale: number) {
     const originZoom = this.zoomFactor;
-    this.zoomFactor += scale;
+    this.zoomFactor *= scale;
     this.zoomFactor = Math.min(this.options.maxZoom as number, Math.max(this.zoomFactor, this.options.minZoom as number));
     return this.zoomFactor / originZoom;
   }
@@ -200,20 +211,55 @@ class PinchZoom {
     this.isDoubleTap = true;
 
     let center = this.getTouches(event)[0];
-    const zoomFactor = this.zoomFactor > 1 ? 1 : this.zoomFactor;
+    const zoomFactor = this.zoomFactor > 1 ? 1 : this.options.tapZoomFactor as number;
     const startZoomFactor = this.zoomFactor;
 
-    this.scaleTo(startZoomFactor + 0 * (zoomFactor - startZoomFactor), center);
-    this.updateTransform();
-
-    if (startZoomFactor > zoomFactor) {
-      console.log('current center zoom')
+    if (startZoomFactor > zoomFactor) { // 역 줌
+      center = this.getCurrentZoomCenter;
     }
+    // this.scaleTo(startZoomFactor + 0 * (zoomFactor - startZoomFactor), center);
+    // this.updateTransform();
+    
+    this.animate({
+      timing: (timeFraction: number) => {
+        return -Math.cos(timeFraction * Math.PI) / 2  + 0.5; // swing timing
+      },  
+      draw: (progress: number) => {
+        this.scaleTo(startZoomFactor + progress * (zoomFactor - startZoomFactor), center)
+      },
+      duration: this.options.animationDuration as number
+    })
+
     // custom callback option
     triggerEvent(this.el, this.options.doubleTapEventName as string);
     if(typeof this.options.onDoubleTap == "function"){
       this.options.onDoubleTap(this, event)
     }
+  }
+  // requestAnimationFrame - https://javascript.info/js-animation
+  private animate (options: {timing: Function, draw: Function, duration: number, callback?: () => void}) {
+    let start = performance.now();
+    this.inAnimation = true;
+
+    const self = this;
+    function render(time: number) {
+      if (!self.inAnimation) return;
+      let timeFraction = (performance.now() - start) / options.duration;
+      if (timeFraction > 1) {
+        timeFraction = 1;
+        options.draw(1);
+        if (options?.callback) options.callback();
+        self.updateTransform();
+        self.inAnimation = false;
+        self.updateTransform();
+      } else {
+        let progress = options.timing(timeFraction);
+        options.draw(progress);
+        self.updateTransform();
+        requestAnimationFrame(render);
+      }
+    }
+    requestAnimationFrame(render);
   }
 
   // utils
