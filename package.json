@@ -10,7 +10,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "esbuild src/index.ts --watch --bundle --outfile=dist/index.js",
-    "build": "esbuild src/index.ts --minify --pure:console.log --bundle --outfile=build/dist/index.js && cp index.html build/"
+    "build": "esbuild src/index.ts --minify --pure:console.log --bundle --outfile=build/dist/index.js && cp index.html build/ && cp kitten-tall.jpg build/",
+    "upload": "npm run build && aws s3 sync ./build s3://hashsnap-static/test/julie/220621_pinchzoom --exclude \"package.json\""
   },
   "keywords": [],
   "author": "forJihye <qkrwlgp76@gmail.com> (https://github.com/forJihye)",
